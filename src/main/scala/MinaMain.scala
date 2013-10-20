@@ -19,6 +19,5 @@ object GopherServer extends App {
     new ProtocolCodecFilter(new TextLineCodecFactory(Charset.forName("UTF-8"))))
 
   acceptor.setHandler(new GopherHandler)
-  //acceptor.getSessionConfig().setReadBufferSize(2048)
   acceptor.bind(new InetSocketAddress(port))
 }

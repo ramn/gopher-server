@@ -79,7 +79,7 @@ class GopherHandler(documentRoot: Path, host: String, port: Int) extends IoHandl
     response + messageTermination
   }
 
-  def fetchContent(documentRoot: Path): Iterable[FileSystemEntry] = {
+  protected def fetchContent(documentRoot: Path): Iterable[FileSystemEntry] = {
     import collection.JavaConverters._
     Files.newDirectoryStream(documentRoot)
       .asScala

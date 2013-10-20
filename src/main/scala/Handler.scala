@@ -5,12 +5,14 @@ import java.nio.file.Paths
 import java.nio.file.Files
 import org.apache.mina.core.service.IoHandlerAdapter
 import org.apache.mina.core.session.IoSession
+import java.nio.charset.MalformedInputException
 
 
 class GopherHandler(documentRoot: Path, host: String, port: Int) extends IoHandlerAdapter with Loggable {
   val CrLf = "\r\n"
   val messageTermination = '.' + CrLf
   def documentRootContent = fetchContent(documentRoot)
+  val NotFound = "404 - Not Found"
 
   override def messageReceived(session: IoSession, message: Any) {
     message match {
@@ -23,7 +25,7 @@ class GopherHandler(documentRoot: Path, host: String, port: Int) extends IoHandl
           val response = selectorHandler(selectedPath, session)
           session.write(response)
         } else {
-          session.write("404")
+          session.write(NotFound)
         }
       case _ =>
         logger.warn(s"Got unknown selector: $message")
@@ -34,28 +36,31 @@ class GopherHandler(documentRoot: Path, host: String, port: Int) extends IoHandl
   protected def selectorHandler(selectedPath: Path, session: IoSession) = {
     val absolutePath = documentRoot.resolve(selectedPath).normalize
     if (!isWithinDocRoot(absolutePath)) {
-      "404 - Not Found"
+      NotFound
     } else {
       if (Files.isDirectory(absolutePath)) {
         formatResponse(fetchContent(absolutePath))
       } else {
-        import java.nio.charset.MalformedInputException
-        try {
-          val fileContent = io.Source.fromFile(absolutePath.toFile, "UTF8").mkString
-          fileContent
-        } catch {
-          case e: MalformedInputException =>
-            logger.warn(s"MalformedInputException for selector ${selectedPath.toString}, sending as bytes instead")
-            val inputStream = Files.newInputStream(absolutePath)
-            var data = Seq.empty[Byte]
-            while (inputStream.available > 0) {
-              data = data :+ inputStream.read.asInstanceOf[Byte]
-            }
-            data.toArray
-        }
+        serveFile(absolutePath)
       }
     }
   }
+
+  protected def serveFile(absolutePath: Path) =
+    try {
+      val source = io.Source.fromFile(absolutePath.toFile, Config.charset.name)
+      val fileContent = source.mkString
+      fileContent
+    } catch {
+      case e: MalformedInputException =>
+        logger.warn(s"MalformedInputException for selector ${absolutePath.toString}, sending as bytes instead")
+        val inputStream = Files.newInputStream(absolutePath)
+        var data = Seq.empty[Byte]
+        while (inputStream.available > 0) {
+          data = data :+ inputStream.read.asInstanceOf[Byte]
+        }
+        data.toArray
+    }
 
   override def exceptionCaught(session: IoSession, cause: Throwable) {
     cause.printStackTrace

@@ -11,7 +11,12 @@ import java.nio.charset.MalformedInputException
 class GopherHandler(documentRoot: Path, host: String, port: Int) extends IoHandlerAdapter with Loggable {
   val CrLf = "\r\n"
   val messageTermination = '.' + CrLf
-  def documentRootContent = fetchContent(documentRoot)
+  def documentRootContent =
+    if (Files.isDirectory(documentRoot))
+      fetchContent(documentRoot)
+    else
+      List(DirEntry(documentRoot.getFileName.toString, documentRoot.toString))
+
   val NotFound = "404 - Not Found"
 
   override def messageReceived(session: IoSession, message: Any) {

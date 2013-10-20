@@ -9,6 +9,8 @@ Then you should be able to run the server by running:
 
     ./run-server /path/to/my/doc/root
 
+The path to your docs root has to be absolute.
+
 ## Logging
 Log level can be configured with the system property:
 

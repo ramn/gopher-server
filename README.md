@@ -1,8 +1,13 @@
-# Description
+## Description
 A Gopher server built in Scala.
 
 The aim is a simple server which serves a directory on the filesystem.
 
+## How to run
+You need Java 7 and sbt (scala build tool) installed.
+Then you should be able to run the server by runnin:
+
+    ./run-server /path/to/my/doc/root
 
 ## Logging
 Log level can be configured with the system property:

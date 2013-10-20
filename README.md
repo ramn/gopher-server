@@ -1,3 +1,9 @@
+# Description
+A Gopher server built in Scala.
+
+The aim is a simple server which serves a directory on the filesystem.
+
+
 ## Logging
 Log level can be configured with the system property:
 

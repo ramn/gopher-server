@@ -10,6 +10,9 @@ import org.apache.mina.filter.codec.textline.TextLineCodecFactory
 import org.apache.mina.filter.codec.textline.TextLineDecoder
 import org.apache.mina.filter.logging.LoggingFilter
 
+object Config {
+  val charset = Charset.forName("UTF-8")
+}
 
 object GopherServer extends App with Loggable {
   if (args.isEmpty) {
@@ -24,7 +27,7 @@ object GopherServer extends App with Loggable {
   acceptor.getFilterChain.addLast("codec",
     new ProtocolCodecFilter(
       new ByteEncoder,
-      new TextLineDecoder(Charset.forName("UTF-8"))))
+      new TextLineDecoder(Config.charset)))
   acceptor.setHandler(new GopherHandler(documentRoot, "localhost", port))
   acceptor.bind(new InetSocketAddress(port))
   logger.info("Server listening for connections")

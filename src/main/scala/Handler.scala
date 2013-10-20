@@ -10,7 +10,7 @@ import org.apache.mina.core.session.IoSession
 class GopherHandler(documentRoot: Path, host: String, port: Int) extends IoHandlerAdapter with Loggable {
   val CrLf = "\r\n"
   val messageTermination = '.' + CrLf
-  val documentRootContent = fetchContent(documentRoot)
+  def documentRootContent = fetchContent(documentRoot)
 
   override def messageReceived(session: IoSession, message: Any) {
     message match {

@@ -19,22 +19,25 @@ class GopherHandler(documentRoot: Path, host: String, port: Int) extends IoHandl
       case "" =>
         session.write(formatResponse(documentRootContent))
       case selector: String =>
-        logger.debug(s"Got selector: $selector")
-        val selectedPath = Paths.get(selector)
-        if (isWithinDocRoot(selectedPath)) {
-          val response = selectorHandler(selectedPath, session)
-          session.write(response)
-        } else {
-          session.write(NotFound)
-        }
+        session.write(selectorHandler(selector, session))
       case _ =>
         logger.warn(s"Got unknown selector: $message")
     }
     session.close(false)
   }
 
-  protected def selectorHandler(selectedPath: Path, session: IoSession) = {
+  protected def selectorHandler(selector: String, session: IoSession) = {
+    logger.debug(s"Got selector: $selector")
+    val selectedPath = Paths.get(selector)
+    if (isWithinDocRoot(selectedPath))
+      fetchContentForSelectedPath(selectedPath, session)
+    else
+      NotFound
+  }
+
+  protected def fetchContentForSelectedPath(selectedPath: Path, session: IoSession) = {
     val absolutePath = documentRoot.resolve(selectedPath).normalize
+    // Check the path again after resolving and normalizing
     if (!isWithinDocRoot(absolutePath)) {
       NotFound
     } else {
